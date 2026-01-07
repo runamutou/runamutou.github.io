@@ -1,0 +1,237 @@
+@charset "utf-8";
+
+/* ==========================
+  初期設定
+========================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+img {
+    width: 100%;
+}
+
+/* ==========================
+  モーダル（ポップアップ）
+========================== */
+.js_modalBtnWrap {
+    width: 300px;
+    max-width: 100%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.js_modalBtnCont {
+    display: block;
+    color: #222;
+    background-color: #fff;
+    padding: 15px 5px;
+    transition: 0.3s;
+}
+
+.js_modalBtnCont:hover,
+.js_modalBtnCont:focus {
+    color: #fff;
+    background-color: #222;
+}
+
+.js_modalWrap {
+    opacity: 0;
+    z-index: -1;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.js_modalWrap.active {
+    animation: modalOpen 0.3s ease forwards;
+}
+
+.js_modalWrap.active2 {
+    animation: modalClose 0.3s ease forwards;
+}
+
+.js_modalBG {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.js_modalContInner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    width: 720px;
+    max-width: 100%;
+    background-color: #fff;
+    max-height: 600px;
+    padding: 40px;
+}
+
+.js_modalCont {
+    overflow-y: scroll;
+    max-height: 520px;
+}
+
+.js_modalCont>*+* {
+    margin-top: 10px;
+}
+
+.js_modalContInner>.js_modalClose+* {
+    margin-top: 0;
+}
+
+.js_modalClose {
+    display: block;
+    position: absolute;
+    top: 10.5px;
+    right: 10.5px;
+    width: 20px;
+    height: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.js_modalClose::before,
+.js_modalClose::after {
+    content: "";
+    background-color: #222;
+    position: absolute;
+    top: -5px;
+    right: 10px;
+    width: 1px;
+    height: 30px;
+}
+
+.js_modalClose::before {
+    transform: rotate(45deg);
+}
+
+.js_modalClose::after {
+    transform: rotate(-45deg);
+}
+
+@keyframes modalOpen {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+        z-index: 1000;
+    }
+}
+
+@keyframes modalClose {
+    0% {
+        opacity: 1;
+        z-index: 1000;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* ==========================
+コンテンツの中身
+========================== */
+.ly_inner {
+    width: 100%;
+    /* max-width: 1080px; */
+    /* margin: 100px auto; */
+    padding: 2vh;
+    background-color: #ccc;
+}
+
+.ly_inner h2 {
+    font-size: 150%;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.md_textblock>*+* {
+    margin-top: 10px;
+}
+
+.md_textblock>*+.js_modalBtnWrap {
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+}
+
+table th,
+table td {
+    border: 1px solid #222;
+    padding: 10px;
+}
+
+table th {
+    width: 20%;
+    background-color: #ccc;
+    white-space: nowrap;
+}
+
+.md_linkBtnWrap {
+    width: 300px;
+    max-width: 100%;
+    margin: 10px auto 0;
+    text-align: center;
+}
+
+.md_linkBtnCont {
+    display: block;
+    color: #222;
+    border: 1px solid #222;
+    padding: 15px 5px;
+    transition: 0.3s;
+}
+
+.md_linkBtnCont:hover,
+.md_linkBtnCont:focus {
+    color: #fff;
+    background-color: #222;
+}
+
+/* PC幅に適用 */
+@media (min-width: 768px) {
+    .hp_sp {
+        display: none !important;
+    }
+}
+
+/* スマホ幅に適用 */
+@media (max-width: 767px) {
+    .hp_pc {
+        display: none !important;
+    }
+
+    .js_modalContInner {
+        max-height: 400px;
+        padding: 20px;
+    }
+
+    .js_modalCont {
+        max-height: 360px;
+    }
+
+    .js_modalClose {
+        top: -30px;
+    }
+
+    .js_modalClose::before,
+    .js_modalClose::after {
+        background-color: #fff;
+    }
+}

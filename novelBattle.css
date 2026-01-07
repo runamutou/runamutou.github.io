@@ -1,0 +1,108 @@
+body{
+    background-color:#f8f9fa;
+}
+
+.side {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 100vh;
+    margin-top: 70px;
+    background: #ffffff;
+    border-right: 1px solid #ccc;
+  
+    box-sizing: border-box;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+#sideprofile{
+    width: 100px;
+}
+
+.request {
+    font-size: 30px;
+    text-align: center;
+}
+
+.name {
+    text-align: right;
+}
+
+.eclips{
+ margin:  auto;
+}
+
+
+/* --- メインコンテンツ（投稿確認ボックス） --- */
+.content {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 70%;
+    /* サイドメニューの幅 + 余白 */
+    margin:20px auto 20px 300px;
+    padding: 20px 40px;
+
+    display: grid;
+    gap: 10px;
+   
+}
+
+
+
+.content-header {
+    background: #20c997;
+    color: #fff;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    padding: 15px;
+    border-radius: 12px 12px 0 0;
+    margin: -20px -40px 20px;
+}
+
+.label {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 3px;
+}
+
+.title,
+#editor {
+    width: 100%;
+    padding: 5px;
+    font-size: 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.title:focus,
+#editor:focus {
+    outline: none;
+    border-color: #20c997;
+    box-shadow: 0 0 0 2px rgba(32, 201, 151, 0.2);
+}
+
+#editor {
+    resize: vertical;
+    min-height: 300px;
+}
+
+.complete {
+    margin-top: 20px;
+    padding: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 10px;
+    background: #20c997;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+

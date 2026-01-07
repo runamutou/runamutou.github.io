@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>依頼投稿</title>
+    <link rel="stylesheet" href="./css/drow.css">
+    <style>
+        .canvas-area {
+            display: flex;
+            gap: 90px;
+            margin: 10px;
+            align-items: flex-start;
+        }
+        .tool-box {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .color-picker {
+            display: flex;
+            gap: 10px;
+        }
+        .color-btn {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            border: 2px solid #aaa;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="canvas-area">
+
+
+    <!-- ツールボックス -->
+    <div class="tool-box">
+
+        <!-- カラー選択 -->
+        <div class="color-picker">
+            <label><input type="color" id="colorBox">色の選択</label>
+            <div class="color-btn" style="background:black;" data-color="black"></div>
+            <div class="color-btn" style="background:silver;" data-color="silver"></div>
+            <div class="color-btn" style="background:gray;" data-color="gray"></div>
+            <div class="color-btn" style="background:white;" data-color="white"></div>
+            <div class="color-btn" style="background:maroon;" data-color="maroon"></div>
+            <div class="color-btn" style="background:red;" data-color="red"></div>
+            <div class="color-btn" style="background:purple;" data-color="purple"></div>
+
+            <div class="color-btn" style="background:fuchsia;" data-color="fuchsia"></div>
+            <div class="color-btn" style="background:green;" data-color="green"></div>
+            <div class="color-btn" style="background:lime;" data-color="lime"></div>
+            <div class="color-btn" style="background:olive;" data-color="olive"></div>
+            <div class="color-btn" style="background:yellow;" data-color="yellow"></div>
+            <div class="color-btn" style="background:navy;" data-color="navy"></div>
+            <div class="color-btn" style="background:blue;" data-color="blue"></div>
+            <div class="color-btn" style="background:teal;" data-color="teal"></div>
+            <div class="color-btn" style="background:aqua;" data-color="aqua"></div>
+        </div>
+<div id="color-history" class="color-history"></div>
+        <!-- 線の太さ -->
+        <label>線の太さ</label>
+        <input type="range" id="line-width" min="1" max="20" value="1">
+
+        <!-- Undo -->
+        <button id="undo-button">やり直し</button>
+
+        <!-- 全消去 -->
+        <button id="clear-button">全消去</button>
+        <script src="https://togetherjs.com/togetherjs-min.js"></script>
+        <button onclick="TogetherJS(this); return false;">TogetherJS を起動</button>
+            <!-- キャンバス -->
+    <canvas id="drawing-area" width="1000" height="450"></canvas>
+    <script>
+        let can = document.getElementById("drawing-area");
+    
+        // canvasに枠線をつける
+        can.style.border = "1px solid";
+    </script>
+        <button id="decide-button">完成！</button>
+    </div>
+
+</div>
+
+<script src="/drow.js"></script>
+<script src="./js/header.js"></script>
+</body>
+</html>

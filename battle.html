@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>バトル部屋選択</title>
+<style>
+body {
+    background: #f0f8ff;
+    font-family: "Yu Gothic", sans-serif;
+}
+.room-container {
+    max-width: 900px;
+    margin: 80px auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+}
+.room {
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+.room:hover {
+    transform: scale(1.05);
+}
+</style>
+</head>
+
+<body>
+
+<h1 id="title" style="text-align:center;"></h1>
+
+<div class="room-container">
+    <div class="room" data-room="1">部屋 1</div>
+    <div class="room" data-room="2">部屋 2</div>
+    <div class="room" data-room="3">部屋 3</div>
+    <div class="room" data-room="4">部屋 4</div>
+</div>
+
+<script src="./js/battle.js"></script>
+<script src="./js/header.js"></script>
+</body>
+</html>

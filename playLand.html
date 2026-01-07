@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>依頼投稿</title>
+    <link rel="stylesheet" href="./css/playLand.css">
+</head>
+
+<body>
+
+<style>
+/* 共通スタイル */
+body {
+    background: #e9f7f7;
+    font-family: "Yu Gothic", sans-serif;
+}
+
+/* セクション */
+.category {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+}
+
+/* タイトル */
+.category h2 {
+    font-size: 28px;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+/* 下の区切り線 */
+.category hr {
+    border: none;
+    border-top: 3px solid #ccc;
+    margin-bottom: 25px;
+}
+
+/* カード一覧（グリッド） */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 40px;
+}
+
+/* カード */
+.service-card {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: 0.3s;
+}
+
+/* ホバー時 */
+.service-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
+
+/* アイコン丸枠 */
+.icon {
+    width: 140px;
+    height: 140px;
+    margin: auto;
+    border-radius: 50%;
+    background: #d3eefb;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.icon img {
+    width: 60%;
+    opacity: 0.85;
+}
+
+/* ラベル */
+.label {
+    font-size: 20px;
+    font-weight: bold;
+}
+</style>
+
+<!-- ▼----------- イラスト ----------▼ -->
+<div class="category">
+    <h2>イラストバトル</h2>
+    <hr>
+
+    <div class="card-container">
+        <div class="service-card" data-type="illust">
+            <div class="icon"><img src="./image/筆のアイコン1.png"></div>
+            <div class="label">キャラクター制作</div>
+        </div>
+        <div class="service-card" data-type="illust">
+            <div class="icon"><img src="./image/筆のアイコン1.png"></div>
+            <div class="label">絵しりとり</div>
+        </div>
+        <div class="service-card" data-type="illust">
+            <div class="icon"><img src="./image/筆のアイコン1.png"></div>
+            <div class="label">イラスト陣地バトル</div>
+        </div>
+        <div class="service-card" data-type="illust">
+            <div class="icon"><img src="./image/筆のアイコン1.png"></div>
+            <div class="label">合作</div>
+        </div>
+     
+    </div>
+</div>
+
+
+<!-- ▼----------- 音楽 ----------▼ -->
+<div class="category">
+    <h2>音楽バトル</h2>
+    <hr>
+
+    <div class="card-container">
+        <div class="service-card" data-type="music"> 
+            <div class="icon"><img src="./image/音楽アイコン.png"></div>
+            <div class="label">作曲バトル</div>
+        </div>
+        <div class="service-card" data-type="music">
+            <div class="icon"><img src="./image/音楽アイコン.png"></div>
+            <div class="label">作詞バトル</div>
+        </div>
+        <div class="service-card" data-type="music">
+            <div class="icon"><img src="./image/音楽アイコン.png"></div>
+            <div class="label">合作</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ▼----------- 文章 ----------▼ -->
+<div class="category">
+    <h2>文章バトル</h2>
+    <hr>
+
+    <div class="card-container">
+        <div class="service-card" data-type="novel">
+            <div class="icon"><img src="./image/4820.png"></div>
+            <div class="label">記事バトル</div>
+        </div>
+        <div class="service-card" data-type="novel">
+            <div class="icon"><img src="./image/4820.png"></div>
+            <div class="label">脚本バトル</div>
+        </div>
+        <div class="service-card" data-type="novel"> 
+            <div class="icon"><img src="./image/4820.png"></div>
+            <div class="label">俳句バトル</div>
+        </div>
+        <div class="service-card" data-type="novel" >
+            <div class="icon"><img src="./image/4820.png"></div>
+            <div class="label">合作</div>
+        </div>
+    </div>
+</div>
+
+<script src="./js/playLand.js"></script>
+<script src="./js/header.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>依頼投稿</title>
+    <link rel="stylesheet" href="./css/checkCont.css">
+</head>
+
+<body>
+
+    <article>
+        <div class="side">
+            <!-- 上のプロフィール -->
+            <div class="sideProfile"  onclick="location.href='mypage.html'">
+                <img src="image/createhub.png" class="image">
+                <p class="userName">かわいいイラスト描いてくれる方</p>
+            </div>
+            <div class="sideProfile"  onclick="location.href='mypage.html'">
+                <img src="image/tokimekiMAYOYON.jpeg" class="image">
+                <p class="userName">MMD作成求</p>
+            </div>
+            <div class="sideProfile"  onclick="location.href='mypage.html'">
+                <img src="image/dwfKHP.gif" class="image">
+                <p class="userName">動画作成してほしい
+                </p>
+            </div>
+            <div class="sideProfile"  onclick="location.href='mypage.html'">
+                <img src="image/icon/小鳥のアイコン.png" class="image">
+                <p class="userName">SNS運用をしてほしい</p>
+            </div>
+        
+      
+        </div>
+        
+
+        <div class="content">
+                <div class="row1">
+                <img src="image/createhub.png" class="Contimage">
+               <div class="eclips">
+                    <p class="request">かわいいイラスト書いてくれる方</p>
+                    <p class="name"  style="color: aqua;">チェチャンスウ
+                    </p>
+                </div>
+                </div>
+                  
+          
+            
+            <label>依頼概要</label>
+            <div class="row2">
+            <p>なんでもいいです。自分が思う最高のキャラクターを描いてください</p>
+            </div>
+
+            <div class="row3">
+                <p>納品期日：2025年12月31日</p>
+                <p>報酬金：5,000円</p>
+                <p>必要ランク：初心者から </p>
+            </div>
+
+        </div>
+        <div class="row7">
+            <button class="send" type="button" onclick="openFile()">納品</button>
+            <input type="file" id="fileInput" style="display:none;" multiple>
+            <div id="fileList" class="file-list"></div>
+            
+        <script>
+ function openFile() {
+    document.getElementById("fileInput").click();
+}
+
+const fileInput = document.getElementById("fileInput");
+const fileList = document.getElementById("fileList");
+
+// 選択したファイルを保持しておく
+let selectedFiles = [];
+
+fileInput.addEventListener("change", () => {
+    let newFiles = Array.from(fileInput.files);
+
+    // 追加した結果が5つを超える場合
+    if (selectedFiles.length + newFiles.length > 5) {
+        alert("アップロードできるファイルは最大5つまでです！");
+        fileInput.value = "";
+        return;
+    }
+
+    // 新しいファイルをselectedFilesに追加
+    selectedFiles = selectedFiles.concat(newFiles);
+
+    // 表示更新
+    renderFileList();
+
+    // 選択状態リセット（同じファイルを再選択できるように）
+    fileInput.value = "";
+});
+
+
+function renderFileList() {
+    fileList.innerHTML = "";
+
+    selectedFiles.forEach((file, index) => {
+        const item = document.createElement("div");
+        item.className = "file-item";
+
+        let thumbHtml = "";
+
+        // 画像の場合はサムネ、その他はアイコン風
+        if (file.type.startsWith("image/")) {
+            const imgUrl = URL.createObjectURL(file);
+            thumbHtml = `<img src="${imgUrl}" class="thumb">`;
+        } else {
+            thumbHtml = `<div class="thumb">📄</div>`;
+        }
+
+        item.innerHTML = `
+            ${thumbHtml}
+            <p style="font-size: 12px; word-break: break-all;">${file.name}</p>
+            <span class="delete-btn" onclick="deleteFile(${index})">削除</span>
+        `;
+
+        fileList.appendChild(item);
+    });
+}
+
+function deleteFile(index) {
+    selectedFiles.splice(index, 1);
+    renderFileList();
+}
+
+        </script>
+
+        </div>
+    </article>
+
+
+    <script src="./js/checkCont.js"></script>
+    <script src="./js/header.js"></script>
+</body>

@@ -1,0 +1,20 @@
+
+.color-btn, .history-color {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 3px;
+}
+
+.color-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#color-history {
+    display: flex;
+    margin-top: 10px;
+    gap: 5px;
+}

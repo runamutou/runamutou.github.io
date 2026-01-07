@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>新規登録 | CreatorMatch</title>
+  <link rel="stylesheet" href="css/login.css" />
+</head>
+<body>
+  <main class="login-container">
+    <h2>新規登録</h2>
+
+    <form id="register-form" class="login-form">
+      <input type="text" id="reg-username" placeholder="ユーザー名" required>
+      <input type="email" id="reg-email" placeholder="メールアドレス" required>
+      <input type="password" id="reg-password" placeholder="パスワード" required>
+      <input type="password" id="reg-password-confirm" placeholder="パスワード確認" required>
+      <button type="submit">登録する</button>
+    </form>
+
+    <p id="register-message"></p>
+
+    <p class="to-login">
+      すでにアカウントをお持ちですか？ <a href="index.html">ログインはこちら</a>
+    </p>
+  </main>
+
+  <script src="js/login.js"></script>
+</body>
+</html>

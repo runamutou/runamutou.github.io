@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ユーザー一覧</title>
+</head>
+<body>
+
+    <textarea id="editor" rows="10" cols="50"></textarea>
+
+<script type="module">
+import * as Y from 'https://cdn.skypack.dev/yjs'
+import { WebsocketProvider } from 'https://cdn.skypack.dev/y-websocket'
+
+const ydoc = new Y.Doc()
+
+// 通信（部屋名が同じなら同期される）
+const provider = new WebsocketProvider(
+  'ws://localhost:1234',
+  'sample-room',
+  ydoc
+)
+
+// 共有テキスト
+const ytext = ydoc.getText('editor')
+
+// textareaと同期
+const textarea = document.getElementById('editor')
+
+// Yjs → UI
+ytext.observe(() => {
+  textarea.value = ytext.toString()
+})
+
+// UI → Yjs
+textarea.addEventListener('input', () => {
+  ydoc.transact(() => {
+    ytext.delete(0, ytext.length)
+    ytext.insert(0, textarea.value)
+  })
+})
+
+provider.awareness.setLocalState({
+  name: "るな",
+  color: "blue"
+})
+
+</script>
+
+
+</body>
+</html>

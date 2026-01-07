@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>投稿 | CreatorMatch</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <main class="post-page">
+    <h2>依頼の投稿</h2>
+    <form id="post-form" action="./requester.php" method="post" enctype="multipart/form-data">
+      <label for="photo-input">画像を選択:</label><br>
+      <input name="picture" type="file" id="photo-input" accept="image/*" required><br><br>
+      <input type="hidden" name="picturename" id="picture" multiple>
+      <label for="title-input">タイトル:</label><br>
+      <input name="title" type="text" id="title-input" placeholder="例：VTuberアイコン制作" required><br><br>
+
+      <label for="desc-input">依頼内容:</label><br>
+      <textarea name="request_about" id="desc-input" rows="4" placeholder="どんな依頼か詳しく書いてください" required></textarea><br><br>
+
+      <label for="genre-select">依頼ジャンル:</label><br>
+      <select id="genre-select" required>
+        <option value="">選択してください</option>
+        <option value="イラスト">🎨 イラスト</option>
+        <option value="音楽">🎵 音楽</option>
+        <option value="映像">🎬 映像</option>
+        <option value="デザイン">🖋 デザイン</option>
+        <option value="プログラム">💻 プログラム</option>
+        <option value="その他">✨ その他</option>
+      </select><br><br>
+
+      <label for="reward-input">報酬（任意）:</label><br>
+      <input name="money" type="text" id="reward-input" placeholder="例：5000円"><br><br>
+
+      <input type="date" id="timelimit" name="timelimit">
+      <button type="submit">掲示板に投稿</button>
+    </form>
+
+    <div id="preview-area">
+      <p>選択した画像のプレビュー:</p>
+      <img id="preview-img" src="" alt="プレビュー画像" style="display:none; max-width:300px; border-radius:8px;">
+    </div>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 CreatorMatch</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script src="js/header.js"></script>
+</body>
+
+</html>

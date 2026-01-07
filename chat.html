@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <!-- ここにアプリのscriptタグを貼り付けます。 -->
+
+    <link rel="stylesheet" href="./css/chatstyle.css">
+</head>
+
+
+<body>
+  <div class="side">
+    <!-- 上のプロフィール -->
+    <div class="sideProfile"  onclick="location.href='mypage.html'">
+        <img src="image/createhub.png" class="image">
+        <p class="userName">かわいいイラスト描いてくれる方</p>
+    </div>
+    <div class="sideProfile"  onclick="location.href='mypage.html'">
+        <img src="image/tokimekiMAYOYON.jpeg" class="image">
+        <p class="userName">MMD作成求</p>
+    </div>
+    <div class="sideProfile"  onclick="location.href='mypage.html'">
+        <img src="image/dwfKHP.gif" class="image">
+        <p class="userName">動画作成してほしい
+        </p>
+    </div>
+    <div class="sideProfile"  onclick="location.href='mypage.html'">
+        <img src="image/icon/小鳥のアイコン.png" class="image">
+        <p class="userName">SNS運用をしてほしい</p>
+    </div>
+
+
+</div>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      チャットルーム
+    </div>
+
+    <div id="output"></div>
+
+    <div class="chat-input-area">
+      <textarea id="message" placeholder="メッセージを入力..."></textarea>
+      <button id="send">📨</button>
+    </div>
+  </div>
+
+  <script src="./js/chat.js" type="module"></script>
+  <script src="./js/header.js" type="module"></script>
+</body>
+
+
+</html>

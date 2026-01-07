@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>依頼投稿</title>
+    <link rel="stylesheet" href="./css/approval.css">
+</head>
+
+<body>
+
+    <article>
+        <div class="content">
+            <h1>依頼確認</h1>
+            <div class="pro">
+                <img src="image/dwfKHP.gif" class="img">
+                <div class="textBlock">
+                    <p>クリエイター名：</p>
+                    <p>スキル：</p>
+                    <p>ジャンル：</p>
+                </div> 
+
+            </div>
+            <div class="row2">
+                <p>このクリエイターを承認しますか？</p>
+                <button class="check" type="button">プロフィールをみる</button>
+            </div>
+            <div class="row3">
+                <button class="cancel" type="button">戻る</button>
+                <!-- <button class="police" type="button">通報</button> -->
+          
+                <button class="give" type="button">依頼を受ける</button>
+                <script>
+                    var btn = document.getElementById('give');
+                    btn.addEventListener('click', function() {
+                        window.confirm('クリックされました！');
+                    
+                    })
+                    </script>
+            </div>
+
+
+        </div>
+    </article>
+
+
+    <script src="./css/approval.js"></script>
+    <script src="./js/header.js"></script>
+</body>

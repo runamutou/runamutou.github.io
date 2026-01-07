@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>文章制作</title>
+    <link rel="stylesheet" href="./novelBattle.css">
+</head>
+
+<div class="side">
+    <!-- 上のプロフィール -->
+    <button class="sideProfile" onclick="addBouten()">傍点</button>
+    <button class="sideProfile" onclick="addRuby()">ルビ</button>
+    <button class="sideProfile" onclick="formatText()"">整形</button>
+    <button class=" sideProfile"onclick="saveDraft()">一時保存</button>
+    <button class="sideProfile" onclick="preview()">プレビュー</button>
+</div>
+
+<script>
+    window.onload = () => {
+      const draft = localStorage.getItem("novelDraft");
+      if (draft) {
+        document.getElementById("editor").value = draft;
+      }
+    };
+
+    </script>
+<body>
+
+    <div class="content">
+        <div class="content-header">文章制作
+        </div>
+
+        <label class="label">タイトル</label>
+        <input class="title" type="text">
+
+        <label class="label">本文</label>
+        <textarea id ="editor" rows="10"></textarea>
+
+        <button class="complete">完成！</button>
+    </div>
+
+
+    <script src="/js/novelBattle.js"></script>
+    <script src="./js/header.js"></script>
+</body>

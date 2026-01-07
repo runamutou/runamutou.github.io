@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>モーダル（ポップアップ）ウィンドウ</title>
+    <link rel="stylesheet" href="./modal.css">
+</head>
+
+<body>
+    <main>
+        <section>
+            <div class="ly_inner" id="menu1">
+                <h2>menu1</h2>
+                <div class="md_textblock">自分のスキルを選択してください
+                    <p></p>
+                    <!-- モーダル（ポップアップ）ボタン -->
+                    <p class="js_modalBtnWrap">
+                        <a href="" class="js_modalBtnCont" data-modal-btn="modal01">こちらを
+                            <span class="hp_pc">クリック</span>
+                            <span class="hp_sp">タップ</span>
+                        </a>
+                    </p>
+                    <!-- //モーダル（ポップアップ）ボタン -->
+                </div>
+                <!-- モーダル（ポップアップ）の内容 -->
+                <div class="js_modalWrap" data-modal-cont="modal01">
+                    <div class="js_modalBG"></div>
+                    <div class="js_modalContInner">
+                        <span class="js_modalClose"></span>
+                        <div class="js_modalCont">
+                            <!-- <p><img src="img_sample01.jpg" alt=""></p> -->
+                            <p>テキストテキスト</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- //モーダル（ポップアップ）の内容 -->
+            </div>
+        </section>
+        <section>
+            <div class="ly_inner" id="menu2">
+                <h2>menu2</h2>
+                <div class="md_textblock">
+                    <p>テキストが入りますテキストが入りますテキストが入りますテキストが入りますテキストが入りますテキストが入ります</p>
+                    <!-- モーダル（ポップアップ）ボタン -->
+                    <p class="js_modalBtnWrap"><a href="" class="js_modalBtnCont" data-modal-btn="modal02">中身が多い場合</a>
+                    </p>
+                    <!-- //モーダル（ポップアップ）ボタン -->
+                </div>
+                <!-- モーダル（ポップアップ）の内容 -->
+                <div class="js_modalWrap" data-modal-cont="modal02">
+                    <div class="js_modalBG"></div>
+                    <div class="js_modalContInner">
+                        <span class="js_modalClose"></span>
+                        <div class="js_modalCont">
+                            <!-- <p><img src="img_sample01.jpg" alt=""></p> -->
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <!-- <p><img src="img_sample01.jpg" alt=""></p> -->
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- //モーダル（ポップアップ）の内容 -->
+            </div>
+        </section>
+        <section>
+            <div class="ly_inner" id="menu3">
+                <h2>menu3</h2>
+                <div class="md_textblock">
+                    <p>テキストが入りますテキストが入りますテキストが入りますテキストが入りますテキストが入りますテキストが入ります</p>
+                    <!-- モーダル（ポップアップ）ボタン -->
+                    <p class="js_modalBtnWrap"><a href="" class="js_modalBtnCont" data-modal-btn="modal03">色々入れてみる</a>
+                    </p>
+                    <!-- //モーダル（ポップアップ）ボタン -->
+                </div>
+                <!-- モーダル（ポップアップ）の内容 -->
+                <div class="js_modalWrap" data-modal-cont="modal03">
+                    <div class="js_modalBG"></div>
+                    <div class="js_modalContInner">
+                        <span class="js_modalClose"></span>
+                        <div class="js_modalCont">
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <p>テキストテキスト</p>
+                            <table>
+                                <tr>
+                                    <th>見出し</th>
+                                    <td>内容が入ります内容が入ります</td>
+                                </tr>
+                                <tr>
+                                    <th>見出し</th>
+                                    <td>内容が入ります内容が入ります</td>
+                                </tr>
+                                <tr>
+                                    <th>見出し</th>
+                                    <td>内容が入ります内容が入ります</td>
+                                </tr>
+                            </table>
+                            <!-- <p><img src="img_sample01.jpg" alt=""></p> -->
+                            <p class="md_linkBtnWrap"><a href="" class="md_linkBtnCont">リンクも設置可</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    <script src="./modal.js"></script>
+</body>
+
+</html>

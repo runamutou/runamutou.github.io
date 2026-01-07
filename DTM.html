@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title> ♪音楽バトル！♪</title>
+    <style>
+        /* CSSは変更なし */
+        body {
+            font-family: "Yu Gothic", "Noto Sans JP", system-ui, -apple-system;
+            margin: 16px;
+            background: #f6f7fb;
+            color: #111;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin: 0 0 12px 0;
+        }
+
+        #controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #bbb;
+            background: white;
+            cursor: pointer;
+        }
+
+        button.active {
+            background: #ffefc2;
+            border-color: #f0b400;
+        }
+
+        #piano {
+            position: relative;
+            user-select: none;
+            touch-action: none;
+            height: 180px;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 6px 18px rgba(20, 30, 60, 0.08);
+            background: #ddd;
+        }
+
+        .keys {
+            display: flex;
+            height: 100%;
+            position: relative;
+        }
+
+        .key {
+            position: relative;
+            box-sizing: border-box;
+            border: 1px solid #999;
+            border-right: 0;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .white {
+            width: 40px;
+            background: white;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .white.pressed {
+            background: #f0f5ff;
+            box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.03);
+        }
+
+        .black {
+            width: 26px;
+            height: 110px;
+            background: black;
+            position: absolute;
+            margin-left: -13px;
+            z-index: 2;
+            color: white;
+            font-size: 10px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .black.pressed {
+            background: #222;
+            transform: translateY(2px);
+        }
+
+        .key-label {
+            padding: 4px;
+            opacity: 0.7;
+        }
+
+        #status {
+            margin-left: 8px;
+            font-size: 13px;
+            color: #444;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width:900px) {
+            .white {
+                width: 28px;
+            }
+
+            .black {
+                width: 18px;
+                margin-left: -9px;
+            }
+        }
+
+        #roll-wrapper {
+            position: relative;
+        }
+
+        #piano-roll {
+            background: #1b1b1b;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>♪音楽バトル♪</h1>
+
+    <div id="controls">
+        <button id="btn-init">音声初期化</button>
+        <button id="btn-record-new" onclick="startRecording(false)" disabled>新規録音 (頭から)</button>
+        <button id="btn-record-append" onclick="startRecording(true)" disabled>再生・追記)</button>
+
+        <button hidden id="btn-play" onclick="playEvents()" disabled>再生</button>
+        <button id="btn-stop" onclick="stopTransport(true)" disabled>停止</button>
+
+        <button id="btn-clear" onclick="clearEvents()" style="background: #ff4d4d;">クリア</button>
+        <button id="btn-save" onclick="saveEvents()" disabled>保存 (JSON)</button>
+        <button id="btn-export-audio">音声を書き出し</button>
+
+        <label style="display:inline-block;">
+            <input id="file-load" type="file" accept="application/json">
+            <button id="btn-load">読み込み</button>
+        </label>
+        <div id="status">状態: 停止</div>
+    </div>
+    <div id="piano" aria-hidden="false">
+        <div class="keys" id="keys"></div>
+    </div>
+    <div id="roll-wrapper" style="
+        margin-top:20px;
+        width:100%;
+        height:550px;
+        background:#222;
+        border-radius:6px;
+        overflow:auto;
+        position:relative;">
+        <canvas id="piano-roll" width="2000" height="550"></canvas>
+    </div>
+
+    <script src="https://unpkg.com/tone/build/Tone.js"></script>
+    <script>
+        /* ==================== グローバル変数の定義/初期化 ==================== */
+        let isRecording = false;
+        let recordStartTime = 0;
+        let timelineX = 0;
+        let synth = null;
+        let initialized = false;
+        let currentPart = null;
+        let events = []; // stored {note, time, duration, velocity, midi}
+        
+       
+
+
+        // 録音中のノート情報を保持するためのオブジェクト (キーボード操作とピアノロール操作で共有)
+        let currentRecordingNote = {};
+
+        const statusEl = document.getElementById('status');
+        const rollCanvas = document.getElementById('piano-roll');
+        const rollCtx = rollCanvas.getContext('2d');
+        const keysContainer = document.getElementById('keys');
+        const pianoEl = document.getElementById('piano');
+        const rollWrapper = document.getElementById('roll-wrapper');
+
+        // ピアノロール描画設定
+        let timeScale = 200; // 1秒 = 200px
+        let pitchHeight = 6; // 白鍵高さ = 6px
+        const rollCanvasHeight = 550;
+        synth = new Tone.Sampler({
+            urls: {
+                A0: "A0.mp3",
+                C1: "C1.mp3",
+                "D#1": "Ds1.mp3",
+                "F#1": "Fs1.mp3",
+                A1: "A1.mp3",
+                C2: "C2.mp3",
+                "D#2": "Ds2.mp3",
+                "F#2": "Fs2.mp3",
+                A2: "A2.mp3",
+                C3: "C3.mp3",
+                "D#3": "Ds3.mp3",
+                "F#3": "Fs3.mp3",
+                A3: "A3.mp3",
+                C4: "C4.mp3",
+                "D#4": "Ds4.mp3",
+                "F#4": "Fs4.mp3",
+                A4: "A4.mp3",
+                C5: "C5.mp3",
+                "D#5": "Ds5.mp3",
+                "F#5": "Fs5.mp3",
+                A5: "A5.mp3",
+                C6: "C6.mp3",
+                "D#6": "Ds6.mp3",
+                "F#6": "Fs6.mp3",
+                A6: "A6.mp3",
+                C7: "C7.mp3",
+                "D#7": "Ds7.mp3",
+                "F#7": "Fs7.mp3",
+                A7: "A7.mp3",
+                C8: "C8.mp3",
+            },
+            baseUrl: "https://tonejs.github.io/audio/salamander/",
+            onload: () => {
+                // 音源のロードが完了したら、ボタンを有効にします
+                document.getElementById('btn-init').textContent = '初期化済 (音源ロード済)';
+                document.getElementById('btn-init').disabled = true; // 最初にSamplerをロードするので、初期化ボタンは無効にします
+                document.getElementById('btn-record-new').disabled = false;
+                initialized = true; // Samplerのロード完了を初期化と見なす
+                setStatus('Audio ready (Sampler loaded)');
+            }
+        }).toDestination();
+        const recorder = new Tone.Recorder();
+        synth.connect(recorder);
+
+        /* ====== 88鍵ノート配列生成 (MIDI 21 -> 108) ====== */
+        function midiToNoteName(m) {
+            const names = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const name = names[m % 12];
+            const octave = Math.floor(m / 12) - 1;
+            return name + octave;
+        }
+
+        const midiStart = 21, midiEnd = 108;
+        const notes = [];
+        for (let m = midiStart; m <= midiEnd; m++) notes.push({ midi: m, name: midiToNoteName(m) });
+
+        const keyElements = {}; // noteName -> element
+
+        function setStatus(s) { statusEl.textContent = '状態: ' + s; }
+
+        /* ====== DOM: 鍵生成 (省略) ====== */
+        function createKeys() {
+            keysContainer.innerHTML = '';
+            const whiteWrapper = document.createElement('div');
+            whiteWrapper.style.display = 'flex';
+            whiteWrapper.style.height = '100%';
+            whiteWrapper.style.position = 'relative';
+            whiteWrapper.style.width = '100%';
+            whiteWrapper.className = 'white-wrapper';
+            keysContainer.appendChild(whiteWrapper);
+
+            notes.forEach((n) => {
+                if (!n.name.includes('#')) {
+                    const w = document.createElement('div');
+                    w.className = 'key white';
+                    w.dataset.note = n.name;
+                    w.dataset.midi = n.midi;
+                    const label = document.createElement('div');
+                    label.className = 'key-label';
+                    label.textContent = n.name;
+                    w.appendChild(label);
+                    whiteWrapper.appendChild(w);
+                    keyElements[n.name] = w;
+                }
+            });
+
+            const whiteKeys = Array.from(whiteWrapper.children);
+            const whitePos = {};
+            whiteKeys.forEach((el, i) => whitePos[el.dataset.note] = i);
+            notes.forEach((n) => {
+                if (n.name.includes('#')) {
+                    const leftMidi = n.midi - 1;
+                    const leftNote = midiToNoteName(leftMidi);
+                    const leftIndex = whitePos[leftNote];
+                    if (leftIndex === undefined) return;
+                    const black = document.createElement('div');
+                    black.className = 'key black';
+                    black.dataset.note = n.name;
+                    black.dataset.midi = n.midi;
+                    const numWhite = whiteKeys.length;
+                    const leftPercent = (leftIndex + 1) / numWhite * 100;
+                    black.style.left = leftPercent + '%';
+                    const label = document.createElement('div');
+                    label.className = 'key-label';
+                    label.style.fontSize = '10px';
+                    label.textContent = n.name.replace(/\d+/, '');
+                    black.appendChild(label);
+                    keysContainer.appendChild(black);
+                    keyElements[n.name] = black;
+                }
+            });
+        }
+        createKeys();
+
+
+        /* ====== Tone.js 初期化 ====== */
+        /* ====== Tone.js 初期化 ====== */
+        document.getElementById('btn-init').addEventListener('click', async () => {
+            if (!initialized) {
+                // Samplerのロードがonloadで完了するのを待つため、ここではTone.start()のみ実行
+                await Tone.start();
+
+                // Samplerがロードされていない場合、手動で状態を更新
+                if (synth && synth.loaded) {
+                    initialized = true;
+                    setStatus('Audio ready (Sampler loaded)');
+                    document.getElementById('btn-init').textContent = '初期化済';
+                    document.getElementById('btn-record-new').disabled = false;
+                } else {
+                    setStatus('Audio started, waiting for Sampler to load...');
+                    document.getElementById('btn-init').textContent = '初期化中...';
+                }
+            }
+        });
+
+        /* ====== 追記・再生のための Part 管理ロジック ====== */
+        let playbackPart = null; // 既存のイベントを再生するための Part
+
+        /**
+         * 録音済みのノートデータ (events) を再生するための Tone.Part を設定します。
+         */
+        function setupPlaybackPart() {
+            if (playbackPart) {
+                playbackPart.dispose();
+                playbackPart = null;
+            }
+
+            if (events.length === 0) {
+                return;
+            }
+
+            // 録音データから Part を作成
+            playbackPart = new Tone.Part((time, value) => {
+                synth.triggerAttackRelease(value.note, value.duration, time, value.velocity);
+
+                // 鍵盤の視覚的なフィードバック
+                const delayMs = (time - Tone.now()) * 1000;
+                if (delayMs >= 0) {
+                    setTimeout(() => pressKeyVisual(value.note), delayMs);
+                    setTimeout(() => releaseKeyVisual(value.note), delayMs + value.duration * 1000);
+                } else {
+                    pressKeyVisual(value.note);
+                    setTimeout(() => releaseKeyVisual(value.note), value.duration * 1000);
+                }
+            }, events).start(0);
+
+            playbackPart.loop = false;
+        }
+
+        /* ====== 録音・再生ロジック ====== */
+
+        /**
+         * 録音を開始する
+         * @param {boolean} isAppend - trueの場合、現在位置から追記録音。falseの場合、頭から新規録音。
+         */
+        async function startRecording(isAppend) {
+            if (!initialized) { alert('まず「音声初期化」を押してください'); return; }
+            await Tone.start();
+
+            recordStartTime = Tone.Transport.seconds;
+
+            Tone.Transport.stop();
+            if (currentPart) {
+                currentPart.dispose();
+                currentPart = null;
+            }
+            if (playbackPart) {
+                playbackPart.dispose();
+                playbackPart = null;
+            }
+
+            if (!isAppend) {
+                events = []; // 既存のイベントをクリア
+                Tone.Transport.seconds = 0;
+                rollCanvas.width = 2000;
+                setStatus('新規録音中...');
+            } else {
+                setupPlaybackPart(); // 追記時のみ既存音再生をセットアップ
+                setStatus('追記録音中...');
+            }
+
+            document.getElementById('btn-play').disabled = true;
+            document.getElementById('btn-record-new').disabled = true;
+            document.getElementById('btn-record-append').disabled = true;
+            document.getElementById('btn-stop').disabled = false;
+            document.getElementById('btn-save').disabled = true;
+
+            isRecording = true;
+
+            Tone.Transport.start();
+
+            requestAnimationFrame(updateTimeline);
+        }
+
+        /**
+         * スケジュールされたイベントを再生する
+         */
+        function playEvents() {
+            if (!initialized) { alert('まず「音声初期化」を押してください'); return; }
+            if (events.length === 0) { setStatus('再生するノートがありません'); return; }
+
+            isRecording = false;
+
+            if (currentPart) {
+                currentPart.dispose();
+                currentPart = null;
+            }
+
+            setupPlaybackPart();
+
+            Tone.Transport.cancel();
+            Tone.Transport.stop();
+            Tone.Transport.seconds = 0; // 頭から再生
+
+            const maxTime = events.reduce((max, ev) => Math.max(max, ev.time + ev.duration), 0);
+            Tone.Transport.scheduleOnce(() => {
+                stopTransport(false);
+            }, maxTime + 0.1);
+
+            document.getElementById('btn-play').disabled = true;
+            document.getElementById('btn-record-new').disabled = true;
+            document.getElementById('btn-record-append').disabled = true;
+            document.getElementById('btn-stop').disabled = false;
+
+            Tone.Transport.start();
+            requestAnimationFrame(updateTimeline);
+            setStatus('再生中...');
+        }
+
+        /**
+       * @param {boolean} resetTimeline - trueなら頭に戻す、falseなら現在位置を保持
+         */
+        function stopTransport(resetTimeline = true) {
+            isRecording = false;
+
+            if (currentPart) {
+                currentPart.dispose();
+                currentPart = null;
+            }
+            if (playbackPart) {
+                playbackPart.dispose();
+                playbackPart = null;
+            }
+
+            Tone.Transport.cancel();
+            Tone.Transport.stop();
+
+            if (synth) synth.releaseAll();
+
+            Object.keys(currentRecordingNote).forEach(note => releaseKeyVisual(note));
+            currentRecordingNote = {};
+
+            if (resetTimeline) {
+                // ★ 修正: stopTransport(true) のときだけリセット
+                Tone.Transport.seconds = 0;
+                timelineX = 0;
+                rollWrapper.scrollLeft = 0;
+                setStatus('停止（編集モード）');
+            } else {
+                // 停止位置を維持
+                setStatus('一時停止（追記可能）');
+            }
+
+            // ... (後半のボタン制御はそのまま) ...
+            const hasEvents = events.length > 0;
+            document.getElementById('btn-play').disabled = !hasEvents;
+            document.getElementById('btn-record-new').disabled = false;
+            document.getElementById('btn-record-append').disabled = !hasEvents;
+            document.getElementById('btn-stop').disabled = true;
+            document.getElementById('btn-save').disabled = !hasEvents;
+
+            drawRoll();
+        }
+
+        // タイムラインのクリア
+        function clearEvents() {
+            stopTransport();
+            events = [];
+            rollCanvas.width = 2000;
+            drawRoll();
+            setStatus('イベントをクリアしました');
+            document.getElementById('btn-play').disabled = true;
+            document.getElementById('btn-record-append').disabled = true;
+            document.getElementById('btn-save').disabled = true;
+        }
+
+        // 保存関数 (省略なし)
+        function saveEvents() {
+            if (!events.length) return;
+            const data = JSON.stringify({ meta: { created: new Date().toISOString() }, events }, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'piano_recording.json';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        // 読み込みイベントリスナー (省略なし)
+        document.getElementById('file-load').addEventListener('change', (ev) => {
+            const f = ev.target.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const obj = JSON.parse(e.target.result);
+                    if (!obj.events) throw new Error('不正なフォーマット');
+                    events = obj.events;
+
+                    const maxEnd = events.reduce((acc, e) => Math.max(acc, (e.time || 0) + (e.duration || 0)), 0);
+                    const requiredWidth = maxEnd * timeScale + 200;
+                    rollCanvas.width = Math.max(2000, requiredWidth);
+
+                    document.getElementById('btn-play').disabled = false;
+                    document.getElementById('btn-record-append').disabled = false;
+                    document.getElementById('btn-save').disabled = false;
+                    setStatus('読み込み完了: ' + events.length + 'ノート');
+                    drawRoll();
+                    stopTransport(true);
+                } catch (err) {
+                    alert('読み込み失敗: ' + err.message);
+                }
+            };
+            reader.readAsText(f);
+        });
+
+
+        /* ====== 鍵操作のロジック (統合) ====== */
+
+        function pressKeyVisual(note) {
+            const el = keyElements[note];
+            if (!el) return;
+            el.classList.add('pressed');
+        }
+        function releaseKeyVisual(note) {
+            const el = keyElements[note];
+            if (!el) return;
+            el.classList.remove('pressed');
+        }
+
+        // 鍵盤を押した/離した時のイベント
+        const onPointerDown = (e) => {
+            const target = e.target.closest('.key');
+            if (!target) return;
+            e.preventDefault();
+            if (!initialized) { setStatus('Audioを初期化してください'); return; }
+
+            const note = target.dataset.note;
+            const midi = parseInt(target.dataset.midi);
+
+            if (note in currentRecordingNote) return;
+
+            synth.triggerAttack(note, Tone.now(), 1.0);
+            pressKeyVisual(note);
+
+            if (isRecording) {
+                if (!(note in currentRecordingNote)) {
+                    currentRecordingNote[note] = {
+                        note: note,
+                        midi: midi,
+                        time: Tone.Transport.seconds,
+                        duration: 0,
+                        velocity: 1.0,
+                    };
+                    setStatus('録音中...');
+                }
+            }
+            target.setPointerCapture && target.setPointerCapture(e.pointerId);
+        }
+
+        const onPointerUp = (e) => {
+            const target = e.target.closest('.key');
+            if (!target) return;
+            e.preventDefault();
+
+            const note = target.dataset.note;
+
+            if (!isRecording) {
+                synth.triggerRelease(note);
+            } else if (isRecording) {
+                synth.triggerRelease(note);
+            }
+
+            releaseKeyVisual(note);
+
+            if (isRecording && (note in currentRecordingNote)) {
+                const event = currentRecordingNote[note];
+                event.duration = Tone.Transport.seconds - event.time;
+
+                if (event.duration > 0.05) {
+                    events.push(event);
+                    drawRoll();
+                }
+                delete currentRecordingNote[note];
+            }
+            target.releasePointerCapture && target.releasePointerCapture(e.pointerId);
+        }
+
+        // 鍵盤イベントリスナー
+        piano.addEventListener('pointerdown', onPointerDown);
+        piano.addEventListener('pointerup', onPointerUp);
+        piano.addEventListener('pointercancel', onPointerUp);
+
+
+        /* ============================
+            ピアノロール描画 / 編集機能
+            ============================ */
+
+        // MIDI番号からY座標
+        function noteToY(midi) {
+            return (midiEnd - midi) * pitchHeight;
+        }
+
+        // ノート描画 (グリッド線を追加)
+        function drawRoll() {
+            rollCtx.clearRect(0, 0, rollCanvas.width, rollCanvas.height);
+            rollCtx.fillStyle = "#1b1b1b";
+            rollCtx.fillRect(0, 0, rollCanvas.width, rollCanvas.height);
+
+            // --- 1. 横方向のグリッド線 (音高線) ---
+            for (let m = midiStart; m <= midiEnd; m++) {
+                const y = noteToY(m);
+                const noteName = midiToNoteName(m);
+
+                rollCtx.beginPath();
+                rollCtx.moveTo(0, y);
+                rollCtx.lineTo(rollCanvas.width, y);
+
+                if (noteName.includes('#')) {
+                    rollCtx.strokeStyle = "#2c2c2c";
+                    rollCtx.lineWidth = 0.5;
+                } else if (noteName.startsWith('C')) {
+                    rollCtx.strokeStyle = "#4d4d4d";
+                    rollCtx.lineWidth = 1;
+                } else {
+                    rollCtx.strokeStyle = "#3a3a3a";
+                    rollCtx.lineWidth = 0.5;
+                }
+                rollCtx.stroke();
+            }
+
+            // --- 2. 縦方向のグリッド線 (時間線) ---
+            const beatTime = 0.5; // 1拍の長さ (秒)
+            const barTime = 2.0; // 1小節の長さ (秒)
+
+            for (let time = 0; time < rollCanvas.width / timeScale + barTime; time += beatTime) {
+                const x = time * timeScale;
+                rollCtx.beginPath();
+                rollCtx.moveTo(x, 0);
+                rollCtx.lineTo(x, rollCanvas.height);
+
+                if ((time * 1000) % (barTime * 1000) === 0) {
+                    rollCtx.strokeStyle = "#7c7c7c";
+                    rollCtx.lineWidth = 1.5;
+                } else {
+                    rollCtx.strokeStyle = "#404040";
+                    rollCtx.lineWidth = 0.5;
+                }
+                rollCtx.stroke();
+            }
+
+
+            // --- 3. ノート描画 ---
+            for (const ev of events) {
+                const midi = ev.midi || Tone.Frequency(ev.note).toMidi();
+                const x = ev.time * timeScale;
+                const w = ev.duration * timeScale;
+                const y = noteToY(midi);
+
+                rollCtx.fillStyle = ev.isNew ? "#ff9800" : "#4db3ff"; // 新規作成中は色を変える
+                rollCtx.fillRect(x, y, w, pitchHeight - 1);
+            }
+
+            // --- 4. タイムライン（赤い縦線） ---
+            rollCtx.fillStyle = "red"; // ★ 常に赤線を表示
+            rollCtx.fillRect(timelineX, 0, 2, rollCanvas.height);
+        }
+
+        /* ===== ノート編集・タイムライン移動ロジック ===== */
+        function getCanvasPos(e) {
+            const rect = rollCanvas.getBoundingClientRect();
+
+            const scaleX = rollCanvas.width / rect.width;
+            const scaleY = rollCanvas.height / rect.height;
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+        let dragTarget = null;
+        let dragType = null; // "move", "resize", "create", "timeline" ★ 新しいタイプ
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
+        let creatingNoteStartX = 0;
+        let originalMidi = 0;
+        let creatingNoteStart = 0;
+
+        rollCanvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            rollCanvas.dispatchEvent(new MouseEvent('mousedown', {
+                clientX: e.touches[0].clientX,
+                clientY: e.touches[0].clientY
+            }));
+        }, { passive: false });
+
+        rollCanvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            rollCanvas.dispatchEvent(new MouseEvent('mousemove', {
+                clientX: e.touches[0].clientX,
+                clientY: e.touches[0].clientY
+            }));
+        }, { passive: false });
+
+        rollCanvas.addEventListener('touchend', e => {
+            e.preventDefault();
+            rollCanvas.dispatchEvent(new MouseEvent('mouseup'));
+        });
+
+        rollCanvas.addEventListener('mousedown', (e) => {
+            // 録音中、または再生中は操作不可 (赤線移動のみ許可)
+            if (isRecording || Tone.Transport.state !== 'stopped') {
+                // 再生/録音中は赤線移動のみ許可
+                if (Math.abs((e.clientX - rollCanvas.getBoundingClientRect().left + rollWrapper.scrollLeft) - timelineX) <= 10) {
+                    dragType = "timeline";
+                    e.preventDefault();
+                    setStatus('再生位置移動中...');
+                }
+                return;
+            }
+
+            const rect = rollCanvas.getBoundingClientRect();
+            const { x: mx, y: my } = getCanvasPos(e);
+
+            // 1. ノートの移動/リサイズを検出
+            dragTarget = null;
+            selectedNote = null;
+            for (const ev of events) {
+                const midi = ev.midi || Tone.Frequency(ev.note).toMidi();
+                const x = ev.time * timeScale;
+                const w = ev.duration * timeScale;
+                const y = noteToY(midi);
+
+                if (mx >= x && mx <= x + w && my >= y && my <= y + pitchHeight) {
+                    dragTarget = ev;
+                    selectedNote = ev;
+
+                    if (mx > x + w - 8) {
+                        dragType = "resize";
+                    } else {
+                        dragType = "move";
+                        dragOffsetX = mx - x;
+                        dragOffsetY = my - y;
+                        originalMidi = midi;
+                    }
+                    break;
+                }
+            }
+
+            // 2. タイムライン（赤線）のドラッグ検出 (ノートを掴んでいない場合のみ)
+            if (!dragTarget && Math.abs(mx - timelineX) <= 10) {
+                dragType = "timeline";
+                e.preventDefault();
+                setStatus('再生位置移動中...');
+                return;
+            }
+
+            // 3. ノートの新規作成 (何も掴んでいない場合)
+            if (!dragTarget) {
+                dragType = "create";
+                const newMidi = midiEnd - Math.floor(my / pitchHeight);
+                const snappedMidi = Math.min(midiEnd, Math.max(midiStart, newMidi));
+
+                // ★ 修正: マウスX座標 (mx) からスナップ値を適用し、開始時刻を計算
+                const snapTimeSec = 0.1; // 100ms スナップ (timeScale * 0.1)
+                creatingNoteStart = Math.floor(mx / (timeScale * snapTimeSec)) * snapTimeSec;
+                creatingNoteStartX = creatingNoteStart * timeScale;
+
+                // 新規作成されたノートの開始時刻が、赤線（Transport.seconds）よりも古い場合は、赤線の位置を調整します
+                // (これは必須ではありませんが、ユーザーの意図に合わせるための調整です)
+                if (creatingNoteStart < Tone.Transport.seconds) {
+                    Tone.Transport.seconds = creatingNoteStart;
+                    timelineX = creatingNoteStart * timeScale;
+                    rollWrapper.scrollLeft = Math.max(0, timelineX - rollWrapper.clientWidth / 2);
+                }
+
+                dragTarget = {
+                    note: midiToNoteName(snappedMidi),
+                    midi: snappedMidi,
+                    time: creatingNoteStart,
+                    duration: 0,
+                    velocity: 1.0,
+                    isNew: true
+                };
+
+                events.push(dragTarget);
+                setStatus('ノート作成中...');
+                drawRoll();
+            }
+        });
+        rollCanvas.addEventListener('mousemove', (e) => {
+            e.preventDefault();
+            if (!dragType) return; // dragTypeがない場合は何もしない
+
+            const rect = rollCanvas.getBoundingClientRect();
+            const { x: mx, y: my } = getCanvasPos(e);
+
+            // --- カーソル変更 ---
+            if (dragType === "resize" || dragType === "create") {
+                // ドラッグ終了時のX座標 (ピクセル)
+                let endX = mx;
+
+                const snapTimeSec = 0.1;
+                const snapValue = timeScale * snapTimeSec; // 100msのピクセル幅
+
+                // ドラッグ終了X座標をスナップ
+                endX = Math.round(endX / snapValue) * snapValue;
+
+                if (dragType === "resize") {
+                    // resizeの場合: 開始時刻は固定
+                    let currentX = dragTarget.time * timeScale;
+                    let newDur = (endX - currentX) / timeScale;
+                    dragTarget.duration = Math.max(snapTimeSec, newDur);
+
+                } else if (dragType === "create") {
+                    let currentX = creatingNoteStartX;
+
+                    if (endX >= currentX) {
+                        // 右またはその場にドラッグ: 開始位置は固定
+                        dragTarget.time = currentX / timeScale;
+                        dragTarget.duration = Math.max(snapTimeSec, (endX - currentX) / timeScale);
+                    } else {
+                        // 左にドラッグ: 開始位置と長さが変化
+                        let newTime = endX / timeScale;
+                        let newDur = (currentX - endX) / timeScale;
+
+                        dragTarget.time = Math.max(0, newTime);
+                        dragTarget.duration = Math.max(snapTimeSec, newDur);
+                    }
+                }
+            }
+            // --- タイムラインの移動処理 ---
+            if (dragType === "timeline") {
+                let newX = Math.max(0, mx);
+                timelineX = newX;
+
+                // Transport の時間を更新
+                Tone.Transport.seconds = newX / timeScale;
+
+                drawRoll();
+                return;
+            }
+
+            // --- ノートの編集処理 (dragTargetが必須) ---
+            if (!dragTarget) return;
+
+            if (dragType === "move") {
+                const snapTimeSec = 0.1;
+                const snapValue = timeScale * snapTimeSec; // 100msのピクセル幅
+
+                // マウスの絶対X座標から、ドラッグオフセットを引いた値 (新しいノートの左端X座標)
+                let newX = mx - dragOffsetX;
+
+                // 新しいX座標をスナップ
+                newX = Math.round(newX / snapValue) * snapValue;
+
+                // X座標を時刻に変換
+                let newTime = newX / timeScale;
+
+                dragTarget.time = Math.max(0, newTime);
+                // ノートの縦方向の移動
+                const dy = my - (noteToY(originalMidi) + dragOffsetY);
+                const midiChange = Math.round(dy / pitchHeight);
+                const newMidi = Math.min(midiEnd, Math.max(midiStart, originalMidi - midiChange));
+
+                dragTarget.midi = newMidi;
+                dragTarget.note = midiToNoteName(newMidi);
+            }
+
+            if (dragType === "resize" || dragType === "create") {
+                let newDur = (mx - (dragTarget.time * timeScale)) / timeScale;
+                const snapValue = timeScale * 0.1;
+                newDur = Math.round(newDur * timeScale / snapValue) * snapValue / timeScale;
+
+                if (dragType === "resize") {
+                    dragTarget.duration = Math.max(0.05, newDur);
+                } else if (dragType === "create") {
+                    if (newDur < 0) {
+                        const originalTime = dragTarget.time;
+                        dragTarget.time = Math.max(0, originalTime + newDur);
+                        dragTarget.duration = Math.abs(newDur);
+                    } else {
+                        dragTarget.duration = Math.max(0.05, newDur);
+                    }
+                }
+            }
+
+            drawRoll();
+        });
+
+        rollCanvas.addEventListener('mouseup', () => {
+            if (dragTarget) {
+                if (dragType === "create") {
+                    delete dragTarget.isNew;
+                    setStatus('停止（編集モード）');
+                    document.getElementById('btn-play').disabled = false;
+                    document.getElementById('btn-save').disabled = false;
+                    document.getElementById('btn-record-append').disabled = false;
+                }
+                // ノートを編集したら再生を停止
+                stopTransport(false);
+            }
+
+            if (dragType === "timeline") {
+                setStatus('一時停止（追記可能）');
+            }
+
+            dragTarget = null;
+            dragType = null;
+            rollCanvas.style.cursor = "crosshair";
+        });
+
+        /* ===== タイムライン更新 ===== */
+
+        function updateTimeline() {
+            const currentState = Tone.Transport.state;
+            const elapsedSec = Tone.Transport.seconds;
+
+            if (currentState !== 'stopped') {
+                timelineX = elapsedSec * timeScale;
+
+                const viewWidth = rollWrapper.clientWidth;
+                const scrollNeededX = timelineX - viewWidth / 2;
+                if (scrollNeededX > 0) {
+                    rollWrapper.scrollLeft = scrollNeededX;
+                }
+
+                if (timelineX > rollCanvas.width - 200) {
+                    rollCanvas.width += 800;
+                }
+
+                drawRoll();
+                requestAnimationFrame(updateTimeline);
+            } else {
+                drawRoll();
+            }
+        }
+        function deleteSelectedNote() {
+            if (Tone.Transport.state !== 'stopped') {
+                setStatus('再生または録音中は削除できません');
+                return;
+            }
+
+            if (selectedNote) {
+                // events配列から selectedNote を見つけて削除
+                const index = events.indexOf(selectedNote);
+                if (index > -1) {
+                    events.splice(index, 1);
+                    setStatus('ノート (' + selectedNote.note + ') を削除しました');
+                    selectedNote = null; // 削除後に選択状態をクリア
+                    drawRoll(); // ピアノロールを再描画
+
+                    // イベントが残っていなければボタンを無効化
+                    if (events.length === 0) {
+                        document.getElementById('btn-play').disabled = true;
+                        document.getElementById('btn-record-append').disabled = true;
+                        document.getElementById('btn-save').disabled = true;
+                    }
+                }
+            } else {
+                setStatus('削除するノートが選択されていません');
+            }
+        }
+
+        document.getElementById("btn-export-audio").addEventListener("click", async () => {
+            if (events.length === 0) {
+                alert("書き出す音がありません");
+                return;
+            }
+
+            await Tone.start();
+
+            // 録音開始
+            recorder.start();
+
+            // 再生
+            playEvents();
+
+            // 曲の長さを計算
+            const maxTime = events.reduce(
+                (m, e) => Math.max(m, e.time + e.duration),
+                0
+            );
+
+            // 再生終了後に録音停止
+            setTimeout(async () => {
+                const recording = await recorder.stop();
+
+                // ファイルとして保存
+                const url = URL.createObjectURL(recording);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "music-battle.webm"; // ← ここ重要
+                a.click();
+
+                URL.revokeObjectURL(url);
+            }, (maxTime + 0.2) * 1000);
+        });
+
+
+        // キーボードイベントリスナー
+        document.addEventListener('keydown', (e) => {
+            // DeleteキーまたはBackspaceキーが押され、かつノートが選択されている場合
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+                // input要素などでキー入力が発火しないように制御
+                if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault(); // ブラウザの戻る動作などを防止
+                    deleteSelectedNote();
+                }
+            }
+        });
+    </script>
+
+    <script src="js/header.js"></script>
+
+</body>
+
+</html>
